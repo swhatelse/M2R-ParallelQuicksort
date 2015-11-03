@@ -196,12 +196,21 @@ Well, I'm not sure it is nicer but I have lines. A first crude
 analysis seems to reveal the the parallel version is worth it for
 arrays larger than 400000.
 ** 2015-11-02
-*** Environment
-      #+BEGIN_SRC sh :results output :exports both 
-    less /proc/cpuinfo
-    #+END_SRC
+*** Goal of the experiment
+The previous results show that the parallel algorithm was less efficient than the 
+others when the size of the data is less then 350000. The most likely reason is the 
+that the overhead of managing thread is maybe to costly for data of size bellow 350000.  
+Lets try to see how the performances are impacted if we change the number of threads 
+for data under 350000
+*** Protocole
+**** Environment
+In order to analyse the result, we need to know the caracteristics of the machines ( power, memory size, etc...).
+***** CPU 
+#+BEGIN_SRC sh :results output :exports both 
+          less /proc/cpuinfo
+#+END_SRC
 
-      #+RESULTS:
+#+RESULTS:
       #+begin_example
       processor	: 0
       vendor_id	: AuthenticAMD
@@ -366,6 +375,61 @@ arrays larger than 400000.
       power management: ts ttp tm stc 100mhzsteps hwpstate cpb
 
 #+end_example
+
+***** Memory
+#+BEGIN_SRC sh :results output :exports both
+  less /proc/meminfo
+#+END_SRC
+
+        #+RESULTS:
+        #+begin_example
+        MemTotal:        8175324 kB
+        MemFree:         4915168 kB
+        MemAvailable:    6449316 kB
+        Buffers:          114220 kB
+        Cached:          1563988 kB
+        SwapCached:            0 kB
+        Active:          1933784 kB
+        Inactive:         858428 kB
+        Active(anon):    1115360 kB
+        Inactive(anon):    19536 kB
+        Active(file):     818424 kB
+        Inactive(file):   838892 kB
+        Unevictable:           0 kB
+        Mlocked:               0 kB
+        SwapTotal:       8000508 kB
+        SwapFree:        8000508 kB
+        Dirty:               216 kB
+        Writeback:             0 kB
+        AnonPages:       1116092 kB
+        Mapped:           519688 kB
+        Shmem:             20900 kB
+        Slab:             120576 kB
+        SReclaimable:      91520 kB
+        SUnreclaim:        29056 kB
+        KernelStack:        8496 kB
+        PageTables:        22888 kB
+        NFS_Unstable:          0 kB
+        Bounce:                0 kB
+        WritebackTmp:          0 kB
+        CommitLimit:    12088168 kB
+        Committed_AS:    3553672 kB
+        VmallocTotal:   34359738367 kB
+        VmallocUsed:      319592 kB
+        VmallocChunk:   34359413500 kB
+        HardwareCorrupted:     0 kB
+        AnonHugePages:    364544 kB
+        HugePages_Total:       0
+        HugePages_Free:        0
+        HugePages_Rsvd:        0
+        HugePages_Surp:        0
+        Hugepagesize:       2048 kB
+        DirectMap4k:      115264 kB
+        DirectMap2M:     1980416 kB
+        DirectMap1G:     6291456 kB
+        #+end_example
+
+***** Kernel
 #+begin_src sh :results output :exports both
 uname -r
 #+END_SRC
@@ -373,10 +437,11 @@ uname -r
 #+RESULTS:
 : 3.16.0-38-generic
 
-*** Compilation
+**** Compilation
+In order to be able to perform some comparison, we also need to know how the program was compiled
     #+begin_src sh :results output :exports both 
       make -C src/
-      #+end_src
+    #+end_src
 
       #+RESULTS:
       : make: entrant dans le répertoire « /home/steven/Programmation/M2/EP/M2R-ParallelQuicksort/src »
