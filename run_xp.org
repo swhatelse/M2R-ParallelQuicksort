@@ -1,0 +1,114 @@
+#+TITLE: Run experiment
+#+AUTHOR: Steven QUINITO MASNADA
+#+BABEL: :tangle yes
+* General config
+  #+begin_src sh :session foo :results output :exports both :tangle yes
+    #!/bin/bash
+    BASE="$PWD"
+    DATADIR="$BASE/data"
+    PROG="$BASE/src/parallelQuicksort"
+  #+end_src
+* Initialization
+** Inputs
+   #+begin_src sh :session foo :results output :exports both :tangle yes
+     help_script()
+     {
+         cat << EOF
+     Usage: $0 options
+     Script to configure and run the experiment.
+     
+     OPTIONS:
+     -h     Show help
+     -c     Compile the application
+     -d     Use a debbuger: gdb or valgrind(valgrind+gdb)
+     -r     Run experiments
+     EOF
+     }
+     
+     compile=0
+     d=""
+     run=0
+     
+     while getopts "hcd:r" opt; do
+     case $opt in
+     c)
+        compile=1
+     ;;
+     d)
+         if [["$OPTARG" == "gdb"]]; then
+           WRAPPER="gdb --args"
+         elif [["$OPTARG" == "valgrind"]]; then
+           WRAPPER="valgrind --vgdb=yes --vgdb-error=0 --keep-stacktraces=alloc-and-free"
+         fi
+     ;;
+     h)
+        help_script
+        exit 3
+     ;;
+     r)
+        run=1
+     ;;
+     esac
+     done
+   #+end_src
+** Data file & folder names
+   #+begin_src sh :session foo :results output :exports both :tangle yes
+     cd $DATADIR
+     DATAFOLD=`date +%Y_%m_%d`
+     INFO_NAME="Info"
+     DATA_FILE="Data"
+     mkdir -p $DATAFOLD
+     BKUP=`date +%R`
+     # BKUP=0
+     # while [ -e $DATAFOLD/$INFO_NAME${BKUP}.org ] || [ -e $DATAFOLD/$INFO_NAME${BKUP}.org~ ]; do
+     #     BKUP= `expr $BKUP +1`
+     # done
+     INFO_FILE="$DATAFOLD/$INFO_NAME${BKUP}.org"
+     DATA_FILE="$DATAFOLD/$DATA_FILE${BKUP}.txt"
+   #+end_src
+* Environnement infos
+  #+begin_src sh :session foo :results output :exports both :tangle yes
+    echo "* Environnement infos" >> $INFO_FILE
+  #+end_src
+** Harware
+  #+begin_src sh :session foo :results output :exports both :tangle yes
+    echo "** Hardware" >> $INFO_FILE
+  #+end_src
+*** CPU
+#+begin_src sh :session foo :results output :exports both :tangle yes
+  echo "*** CPU" >> $INFO_FILE
+  less /proc/cpuinfo >> $INFO_FILE
+#+end_src
+*** RAM
+#+BEGIN_SRC sh :results output :exports both
+      echo "*** Memory" >> $INFO_FILE
+  less /proc/meminfo
+#+END_SRC
+
+*** Cache
+** Software
+    #+begin_src sh :session foo :results output :exports both :tangle yes
+    echo "** Software" >> $INFO_FILE
+    #+end_src
+*** OS
+    #+begin_src sh :session foo :results output :exports both :tangle yes
+      echo "*** OS" >> $INFO_FILE
+      uname -r >> $INFO_FILE
+    #+end_src
+*** Compiler
+** Application
+*** Version
+* Compilation
+* Run
+  #+begin_src sh :session foo :results output :exports both :tangle yes
+    if [[ $run == 1 ]]; then
+        echo "======== Runing ========"
+        touch $DATA_FILE
+        for i in 100 1000 10000 100000 1000000; do
+            for rep in `seq 1 5`; do
+                echo "Size: $i" >> $DATA_FILE;
+                $PROG $i >> $DATA_FILE;
+            done ;
+        done ;
+    fi
+  #+end_src

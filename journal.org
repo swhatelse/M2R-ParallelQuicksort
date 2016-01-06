@@ -207,7 +207,7 @@ for data under 350000
 In order to analyse the result, we need to know the caracteristics of the machines ( power, memory size, etc...).
 ***** CPU 
 #+BEGIN_SRC sh :results output :exports both 
-          less /proc/cpuinfo
+  less /proc/cpuinfo
 #+END_SRC
 
 #+RESULTS:
