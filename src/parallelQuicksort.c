@@ -17,6 +17,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
+#include<getopt.h>
 
 #define DNUM 1000000
 #define THREAD_LEVEL 10
@@ -60,10 +61,29 @@ int main(int argc, char *argv[])
   srand(time(NULL));            //seed random
 
   int NUM = DNUM;
-  if (argc == 2)                //user specified list size.
-  {
-    NUM = atoi(argv[1]);
+  int thread_lvl = THREAD_LEVEL;
+  int opt;
+  
+  while( (opt = getopt(argc, argv, "hs:t:") ) != -1){
+      switch(opt){
+      case 'h':
+          fprintf(stderr,"Usage: ./prog -s [array size] -t [thread level]\n");
+          return 0;
+      case 's':
+          NUM = atoi(optarg);
+          break;
+      case 't':
+          thread_lvl = atoi(optarg);
+          break;
+      default:
+          break;
+      }
   }
+  
+  /* if (argc == 2)                //user specified list size. */
+  /* { */
+  /*   NUM = atoi(argv[1]); */
+  /* } */
   //Want to compare sorting on the same list,
   //so backup.
   double *lystbck = (double *) malloc(NUM * sizeof(double));
@@ -89,7 +109,7 @@ int main(int argc, char *argv[])
       }
       else if(strcmp(func_name[i], "Parallel")){
           gettimeofday(&start, NULL);
-          parallelQuicksort(lyst, NUM, THREAD_LEVEL);
+          parallelQuicksort(lyst, NUM, thread_lvl);
           gettimeofday(&end, NULL);
       }
       else{
