@@ -5,8 +5,9 @@
   #+begin_src sh :session foo :results output :exports both :tangle yes
     #!/bin/bash
     BASE="$PWD"
+    SRC_DIR="$PWD/src"
     DATADIR="$BASE/data"
-    PROG="$BASE/src/parallelQuicksort"
+    PROG="$SRC_DIR/parallelQuicksort"
   #+end_src
 * Initialization
 ** Inputs
@@ -35,9 +36,9 @@
         compile=1
      ;;
      d)
-         if [["$OPTARG" == "gdb"]]; then
+         if [[ "$OPTARG" == "gdb" ]]; then
            WRAPPER="gdb --args"
-         elif [["$OPTARG" == "valgrind"]]; then
+         elif [[ "$OPTARG" == "valgrind" ]]; then
            WRAPPER="valgrind --vgdb=yes --vgdb-error=0 --keep-stacktraces=alloc-and-free"
          fi
      ;;
@@ -58,13 +59,13 @@
      INFO_NAME="Info"
      DATA_FILE="Data"
      mkdir -p $DATAFOLD
-     BKUP=`date +%R`
+     BKUP=`date +%T`
      # BKUP=0
      # while [ -e $DATAFOLD/$INFO_NAME${BKUP}.org ] || [ -e $DATAFOLD/$INFO_NAME${BKUP}.org~ ]; do
      #     BKUP= `expr $BKUP +1`
      # done
-     INFO_FILE="$DATAFOLD/$INFO_NAME${BKUP}.org"
-     DATA_FILE="$DATAFOLD/$DATA_FILE${BKUP}.txt"
+     INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
+     DATA_FILE="$DATADIR/$DATAFOLD/$DATA_FILE${BKUP}.txt"
    #+end_src
 * Environnement infos
   #+begin_src sh :session foo :results output :exports both :tangle yes
@@ -80,12 +81,11 @@
   less /proc/cpuinfo >> $INFO_FILE
 #+end_src
 *** RAM
-#+BEGIN_SRC sh :results output :exports both
+#+BEGIN_SRC sh :session foo :results output :exports both :tangle yes
       echo "*** Memory" >> $INFO_FILE
-  less /proc/meminfo
+  less /proc/meminfo >> $INFO_FILE
 #+END_SRC
 
-*** Cache
 ** Software
     #+begin_src sh :session foo :results output :exports both :tangle yes
     echo "** Software" >> $INFO_FILE
@@ -99,50 +99,67 @@
 ** Application
 *** Version
 * Compilation
+  #+BEGIN_SRC sh :session foo :results output :exports both :tangle yes
+    echo "Compiling..."
+    cd $SRC_DIR
+    
+    if [[ "$compile" == 1 ]]; then
+        make clean
+        echo "* Compilation" >> $INFO_FILE
+        echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
+        make -j7 >> $INFO_FILE
+        echo "#+END_EXAMPLE" >> $INFO_FILE
+    fi 
+  #+end_src
 * Run
-  #+begin_src python :results output raw :exports both :tangle yes scripts/run.py
+  Generate experiment with all permutation for the size of the array
+  #+begin_src python :results output raw :exports both 
     import itertools
     import os
     import string
     
     if __name__ == '__main__':
         # all_perm = itertools.permutations([100, 1000, 10000, 100000, 1000000])    
-        all_perm = itertools.permutations([100, 1000])    
+        all_perm = itertools.permutations([100, 1000, 10000, 100000, 1000000], 30)    
         for perm in all_perm:
             for x in perm:
-                cmd="./src/parallelQuicksort " + str(x)
+                print "Size: " + str(x)
+                cmd="./src/parallelQuicksort -s" + str(x)
                 handle = os.popen(cmd, 'r')
                 for line in handle:
-                    print line
-                    
+                    print line.rstrip('\r\n')
   #+end_src
-  #+begin_src sh :session foo :results output :exports both :tangle yes
-    if [[ $run == 1 ]]; then
-        echo "======== Runing ========"
-        touch $DATA_FILE
-        for i in 100 1000 10000 100000 1000000; do
-            for rep in `seq 1 5`; do
-                echo "Size: $i" >> $DATA_FILE;
-                $PROG $i >> $DATA_FILE;
-            done ;
-        done ;
-        for i in 1000 100 10000 100000 1000000; do
-            for rep in `seq 1 5`; do
-                echo "Size: $i" >> $DATA_FILE;
-                $PROG $i >> $DATA_FILE;
-            done ;
-        done ;
-        for i in 10000 1000 100 100000 1000000; do
-            for rep in `seq 1 5`; do
-                echo "Size: $i" >> $DATA_FILE;
-                $PROG $i >> $DATA_FILE;
-            done ;
-        done ;
-        for i in 100000 10000 1000 100 1000000; do
-            for rep in `seq 1 5`; do
-                echo "Size: $i" >> $DATA_FILE;
-                $PROG $i >> $DATA_FILE;
-            done ;
-        done ;
+  
+  Shuffle the size of the array in order to test the size in different
+  order. Maybe it can help for the distribution.
+
+  #+begin_src python :results output raw :exports both :tangle scripts/run.py
+    import itertools
+    import os
+    import string
+    import random
+    
+    if __name__ == '__main__':
+        array_sizes = [100, 1000, 10000, 100000, 1000000]
+        random.shuffle(array_sizes)    
+        for x in array_sizes:
+            print "Size: " + str(x)
+            cmd="./src/parallelQuicksort " + str(x)
+            handle = os.popen(cmd, 'r')
+            for line in handle:
+                print line.rstrip('\r\n')
+  #+end_src
+
+  #+begin_src sh :session foo :results output :exports both :tangle yes 
+    if [[ "$run" == 1 ]]; then
+        cd $BASE
+        echo "Running..."
+        chmod 700 ./scripts/run.py
+    
+        for i in {1..30}
+        do
+            python ./scripts/run.py >> $DATA_FILE
+        done
     fi
   #+end_src
+  

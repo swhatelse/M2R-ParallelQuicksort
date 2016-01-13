@@ -442,10 +442,35 @@ In order to be able to perform some comparison, we also need to know how the pro
     #+begin_src sh :results output :exports both 
       make -C src/
     #+end_src
-
-      #+RESULTS:
+    #+RESULTS:
       : make: entrant dans le répertoire « /home/steven/Programmation/M2/EP/M2R-ParallelQuicksort/src »
       : cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  -c -o parallelQuicksort.o parallelQuicksort.c
       : cc   -g -Wall -Wshadow -Wcast-align -Waggregate-return -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wpointer-arith -Wwrite-strings -finline-functions -O0 -pthread -lrt -std=c99  parallelQuicksort.o  -o parallelQuicksort 
       : make: quittant le répertoire « /home/steven/Programmation/M2/EP/M2R-ParallelQuicksort/src »
+** 2016-01-04
+*** Goal
+- Find if the parallel version is better than the sequential.
+- How much it is better.
+- If it, under which circunstencies.
+*** Experiment design
+There are variables multiples that can affect the behavior of the
+algorithm:
+- the array to sort:
+  - size
+  - composition
+- the level of recursion for the parallel one
+- the compiler:
+  - optimisations
+- warm-up effect:
+  - Execution order
 
+Let's fix for now some parameters:
+- Composition of the array
+- Compiler optimisations
+- fix set of array sizes
+
+And let's randomize some parameters to try have a better distributions
+of the results:
+- Order of algorithm executions
+
+file:run_xp.org
