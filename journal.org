@@ -467,10 +467,17 @@ algorithm:
 Let's fix for now some parameters:
 - Composition of the array
 - Compiler optimisations
-- fix set of array sizes
+- fix set of array sizes:
+  - There is a huge gap between the size of the array in the previous
+    experiment, and we don't really what happens between 100000 and
+    1000000. Lets try with the following set:
+    100, 1000, 10000, 100000, 200000, 400000, 600000, 800000, 1000000
 
 And let's randomize some parameters to try have a better distributions
 of the results:
 - Order of algorithm executions
+- And why not the order of the input sample
 
+The following script gather informations about the platform,
+softwares,etc... and compile and run the experiment.
 file:run_xp.org

@@ -96,6 +96,10 @@
       uname -r >> $INFO_FILE
     #+end_src
 *** Compiler
+    #+begin_src sh :session foo :results output :exports both :tangle yes
+      echo "*** Compiler" >> $INFO_FILE
+      gcc --version >> $INFO_FILE
+    #+end_src
 ** Application
 *** Version
 * Compilation
@@ -107,7 +111,7 @@
         make clean
         echo "* Compilation" >> $INFO_FILE
         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
-        make -j7 >> $INFO_FILE
+        make -C ./ >> $INFO_FILE
         echo "#+END_EXAMPLE" >> $INFO_FILE
     fi 
   #+end_src
@@ -120,7 +124,7 @@
     
     if __name__ == '__main__':
         # all_perm = itertools.permutations([100, 1000, 10000, 100000, 1000000])    
-        all_perm = itertools.permutations([100, 1000, 10000, 100000, 1000000], 30)    
+        all_perm = itertools.permutations([100, 1000, 10000, 100000, 1000000])    
         for perm in all_perm:
             for x in perm:
                 print "Size: " + str(x)
@@ -132,7 +136,8 @@
   
   Shuffle the size of the array in order to test the size in different
   order. Maybe it can help for the distribution.
-
+  There is a huge gap between the size of the array in the previous
+  experiment, lets try with the following set:
   #+begin_src python :results output raw :exports both :tangle scripts/run.py
     import itertools
     import os
@@ -140,7 +145,7 @@
     import random
     
     if __name__ == '__main__':
-        array_sizes = [100, 1000, 10000, 100000, 1000000]
+        array_sizes = [100, 1000, 10000, 100000, 200000, 400000, 600000, 800000, 1000000]
         random.shuffle(array_sizes)    
         for x in array_sizes:
             print "Size: " + str(x)
@@ -160,6 +165,8 @@
         do
             python ./scripts/run.py >> $DATA_FILE
         done
+    
+        perl scripts/csv_quicksort_extractor2.pl < "$DATA_FILE" > "${DATA_FILE}_wide.csv"
     fi
   #+end_src
   
